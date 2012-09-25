@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link href="style4.css" rel="stylesheet" type="text/css"></link>
+  <script src="d3.v2.js"></script>
+  <script src="vishack.js"></script>
+  <body>
+
+    <div id="timeseries"></div>
+    <div id="key"></div>
+    <script>
+      d3.json("data/subway_wait_mean.json", draw);
+    </script>
+	  
+  </body>
+</html>

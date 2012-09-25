@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link href="style3.css" rel="stylesheet" type="text/css"></link>
+  <script src="d3.v2.js"></script>
+  <script src="vis6.js"></script>
+  <body>
+    <script>
+      d3.json("data/turnstile_traffic.json", draw);
+    </script>
+
+    <div id="timeseries">
+      <svg>
+	<g id="chart"></g>
+      </svg>
+    </div>
+    <div id="key">
+      <div class="key_line">
+	<div class="key_square"></div>
+	<div class="key_label"></div>
+      </div>
+      <div class="key_line">
+	<div class="key_square"></div>
+	<div class="key_label"></div>
+      </div>
+    </div>
+	  
+  </body>
+</html>
+

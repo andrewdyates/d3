@@ -34,5 +34,7 @@ d3.json("unemployment.json", function(json) {
 });
 
 function quantize(d) {
+  // maximum of 8, but use 12 quantiles
+  // "data" variable from closure, select county by zip-code-like ID
   return "q" + Math.min(8, ~~(data[d.id] * 9 / 12)) + "-9";
 }

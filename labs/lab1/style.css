@@ -1,0 +1,58 @@
+@import url("jquery-ui/jquery-ui.css");
+body { 
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  margin: 1em auto 4em auto;
+  position: relative;
+  width: 960px;
+}
+
+h1 { 
+  font-size: 64px;
+  font-weight: 300;
+  letter-spacing: -2px;
+  margin: .3em 0 .1em 0;
+}
+#chart svg {
+  background: #999;
+  width: 960px;
+  height: 500px;
+}
+p.caption {
+}
+#legend {
+  text-align:right;
+  float:right;
+}
+#legend .missing {
+  fill: #ccc;
+}
+#legend svg {
+  background: #999;
+  height: 14px;
+}
+.axis path, line {
+  stroke: black;
+}
+.line {
+  float:left;
+}
+.axis path {
+  fill: none;
+}
+path {
+  fill: #ccc;
+  stroke: #fff;
+}
+.outbreak {
+  fill: #f0f;
+}
+#slider {
+  width: 960px;
+}
+#scale {
+  margin-top:10px;
+}
+
+body, .ui-widget { 
+  font: 14px Helvetica Neue;
+}
