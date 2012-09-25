@@ -12,6 +12,9 @@ h1 {
   letter-spacing: -2px;
   margin: .3em 0 .1em 0;
 }
+#national svg {
+  background: #fff;
+}
 #chart svg {
   background: #999;
   width: 960px;

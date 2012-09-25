@@ -36,6 +36,7 @@ d3.json("data_flutrends.json", function(json) {
   draw_slider(0);
   draw_timescale();
   draw_date(0);
+  draw_national(0);
 
   legend
     .attr("width", 13*11+2)
@@ -121,7 +122,7 @@ function draw_timescale() {
 
   time_scale = d3.time.scale()
     .range([0,960])
-    .domain([new Date(2005, 1, 1), new Date(2011, 1, 1)]);
+    .domain([get_date(0), get_date(flu_data.length-1)]);
   var time_axis = d3.svg.axis()
     .scale(time_scale);
   chart.append("g")
@@ -129,9 +130,12 @@ function draw_timescale() {
     .call(time_axis);
 }
 
-function draw_date(i) {
+function get_date(i) {
   d = flu_data[i].date;
-  s = $.datepicker.formatDate('yy, MM dd', new Date(d['year'], d['month']-1, d['day']));
+  return new Date(d['year'], d['month']-1, d['day']);
+}
+function draw_date(i) {
+  s = $.datepicker.formatDate('yy, MM dd', get_date(i));
   d3.select("#date_text")
     .text(s);
 }
@@ -144,8 +148,38 @@ function draw_national() {
   var x_scale = d3.scale.linear()
 	.range([0,960])
         .domain([0, flu_data.length]);
+  // get range for only USA
+  var usa_range = d3.extent(flu_data
+    .map(function(d){return d.data["United States"]})
+    .filter(function(d){return ~(d=="");}));
+  console.log(usa_range);
+  var y_scale = d3.scale.linear()
+	.range([80, 5])
+        .domain(usa_range);
+
+  var line = d3.svg.line()
+    .x(function(d,i){return x_scale(i)})
+    .y(function(d,i){return y_scale(d.data["United States"])});
+  
   d3.select("#national")
     .append("svg")
     .attr("width", 960)
-    .attr("height", 50);
+    .attr("height", 80)
+    .append("path")
+    .attr("d", line(flu_data));
+
+
+
+//   d3.select("#national")
+//     .append("svg")
+//     .attr("width", 960)
+//     .attr("height", 100)
+//     .append("g")
+//     .selectAll("circle")
+//     .data(flu_data).enter().append("circle")
+//       .attr("cx", function(d,i){return x_scale(i)})
+//       .attr("cy", function(d,i){return y_scale(d.data["United States"])})
+//     .attr("r", 1)
+//     .attr("fill", "#000");
+
 }
