@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Fisheye Distortion: NYC Subway Map</title>
+<style>
+
+@import url(style.css);
+
+#chart1 {
+  width: 800px;
+  height: 400px;
+  border: solid 1px #ccc;
+}
+
+text {
+  font: 10px sans-serif;
+}
+
+.background {
+  fill: none;
+  pointer-events: all;
+}
+
+#chart1 .node {
+  stroke: #fff;
+  stroke-width: 1.0px;
+}
+
+#chart1 .link {
+  stroke: #999;
+  stroke-opacity: .6;
+  stroke-width: 1.5px;
+}
+
+#chart2, #chart3 {
+  width: 960px;
+  height: 180px;
+  border: solid 1px #ccc;
+}
+
+#chart2 path, #chart3 line {
+  fill: none;
+  stroke: #333;
+}
+
+#chart3 line {
+  shape-rendering: crispEdges;
+}
+
+#chart4 {
+  margin-left: -40px;
+  height: 506px;
+}
+
+#chart4 .background {
+  fill: #ddd;
+}
+
+#chart4 .dot {
+  stroke: #000;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+</style>
+
+<h1>Fisheye Distortion: NYC Subway</h1>
+
+<p id="chart1">
+
+<p id="chart2">
+
+<script type="text/javascript" src="d3.v2.js"></script>
+<script src="fisheye.js"></script>
+<script>
+
+(function chart1() {
+  var width = 800,
+      height = 500;
+
+  var color = d3.scale.category20();
+
+  var fisheye = d3.fisheye.circular()
+      .radius(120);
+
+  var force = d3.layout.force()
+      .charge(-10)
+      .linkDistance(2)
+      .size([width, height]);
+
+  var svg = d3.select("#chart1").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+  svg.append("rect")
+      .attr("class", "background")
+      .attr("width", width)
+      .attr("height", height);
+
+  d3.json("stations_graph.json", function(data) {
+    var n = data.nodes.length;
+
+    force.nodes(data.nodes).links(data.links);
+
+    // Initialize the positions deterministically, for better results.
+    data.nodes.forEach(function(d, i) { d.x = d.y = width / n * i; });
+
+    // Run the layout a fixed number of times.
+    // The ideal number of times scales with graph complexity.
+    // Of course, don't run too long—you'll hang the page!
+    force.start();
+    for (var i = n; i > 0; --i) force.tick();
+    force.stop();
+
+    // Center the nodes in the middle.
+    var ox = 0, oy = 0;
+    data.nodes.forEach(function(d) { ox += d.x, oy += d.y; });
+    ox = ox / n - width / 2, oy = oy / n - height / 2;
+    data.nodes.forEach(function(d) { d.x -= ox, d.y -= oy; });
+
+    var link = svg.selectAll(".link")
+        .data(data.links)
+      .enter().append("line")
+        .attr("class", "link")
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; })
+        .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+    var node = svg.selectAll(".node")
+        .data(data.nodes)
+      .enter().append("circle")
+        .attr("class", "node")
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; })
+        .attr("r", 2)
+        .style("fill", function(d) { return color(d.group); })
+        .call(force.drag);
+
+    svg.on("mousemove", function() {
+      fisheye.focus(d3.mouse(this));
+
+      node.each(function(d) { d.fisheye = fisheye(d); })
+          .attr("cx", function(d) { return d.fisheye.x; })
+          .attr("cy", function(d) { return d.fisheye.y; })
+          .attr("r", function(d) { return d.fisheye.z * 3; });
+
+      link.attr("x1", function(d) { return d.source.fisheye.x; })
+          .attr("y1", function(d) { return d.source.fisheye.y; })
+          .attr("x2", function(d) { return d.target.fisheye.x; })
+          .attr("y2", function(d) { return d.target.fisheye.y; });
+    });
+  });
+})();
+
+(function chart2() {
+  var width = 960,
+      height = 180,
+      xStepsBig = d3.range(10, width, 16),
+      yStepsBig = d3.range(10, height, 16),
+      xStepsSmall = d3.range(0, width + 6, 6),
+      yStepsSmall = d3.range(0, height + 6, 6);
+
+  var fisheye = d3.fisheye.circular()
+      .focus([360, 90])
+      .radius(100);
+
+  var line = d3.svg.line();
+
+  var svg = d3.select("#chart2").append("svg")
+      .attr("width", width)
+      .attr("height", height)
+    .append("g")
+      .attr("transform", "translate(-.5,-.5)");
+
+  svg.append("rect")
+      .attr("class", "background")
+      .attr("width", width)
+      .attr("height", height);
+
+  svg.selectAll(".x")
+      .data(xStepsBig)
+    .enter().append("path")
+      .attr("class", "x")
+      .datum(function(x) { return yStepsSmall.map(function(y) { return [x, y]; }); });
+
+  svg.selectAll(".y")
+      .data(yStepsBig)
+    .enter().append("path")
+      .attr("class", "y")
+      .datum(function(y) { return xStepsSmall.map(function(x) { return [x, y]; }); });
+
+  var path = svg.selectAll("path")
+      .attr("d", fishline);
+
+  svg.on("mousemove", function() {
+    fisheye.focus(d3.mouse(this));
+    path.attr("d", fishline);
+  });
+
+  function fishline(d) {
+    return line(d.map(function(d) {
+      d = fisheye({x: d[0], y: d[1]});
+      return [d.x, d.y];
+    }));
+  }
+})();
+
+</script>
